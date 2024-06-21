@@ -1,13 +1,24 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, field_validator, ValidationError
 from datetime import datetime as dt
 from pytz import timezone as tz
 
-
 class NoteSchema(BaseModel):
-    title: str = Field(..., min_length=3, max_length=50)  # additional validation for the inputs
-    description: str = Field(..., min_length=3, max_length=50)
-    completed: str = "False"
-    created_date: str = dt.now(tz("Africa/Nairobi")).strftime("%Y-%m-%d %H:%M")
+    title: str
+    description: str
+    completed: str
+    created_date: str
+
+    @field_validator("title")
+    def validate_title(cls, value):
+        if not value:
+            raise ValueError("field required")
+        if len(value) < 3:
+            raise ValueError("Title should have at least 3 characters")
+        if len(value) > 20:
+            raise ValueError("Title should have at most 20 characters")
+        return value
+
+        
 
 
 class NoteDB(NoteSchema):
